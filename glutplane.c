@@ -10,7 +10,7 @@
 #include <unistd.h>
 #else
 #define random rand
-#define srandom srand
+//#define srandom srand
 #endif
 #include <math.h>
 #include <GL/glut.h>
@@ -27,13 +27,14 @@ GLboolean moving = GL_FALSE;
 
 #define MAX_PLANES 15
 
-struct {
+class Plane {
 	float speed; /* zero speed means not flying */
 	GLfloat red, green, blue;
 	float theta;
 	float x, y, z, angle;
-	float xxx;
-} planes[MAX_PLANES];
+	float wing_h;
+};
+Plane planes[MAX_PLANES];
 
 #define v3f glVertex3f  /* v3f was the short IRIS GL name for
                            glVertex3f */
@@ -47,7 +48,7 @@ void draw(void) {
 	glDisable(GL_DEPTH_TEST);
 	glShadeModel(GL_SMOOTH);
 	glBegin(GL_POLYGON);
-	glColor3f(0.0, 0.0, 0.3);
+	glColor3f(0.0, 0.3, 0.0);
 	v3f(-20, 20, -19);
 	v3f(20, 20, -19);
 //	glColor3f(0.0, 0.0, 1.0);
@@ -86,32 +87,16 @@ void draw(void) {
 			glEnd();
 #endif
 			glBegin(GL_TRIANGLES);
-			glVertex3f(-4, 0, (1.0)*planes[i].xxx);
+			glVertex3f(-4, 0, (1.0) * planes[i].wing_h);
 			glVertex3f(-1, 0, 1);
-
 			glColor3f(1, 0, 0);
 			glVertex3f(0, 4, 0);
-//			glEnd();
-
-//			glBegin(GL_TRIANGLES);
 			glColor3f(0.6, 0, 0);
-//			glVertex3f(-1, 0, 1);
-//			glVertex3f(0, 4, 0);
 			glVertex3f(0, 0, 0);
-//			glEnd();
-
-//			glBegin(GL_TRIANGLES);
-//			glColor3f(0.6, 0, 0);
-//			glVertex3f(0, 4, 0);
-//			glVertex3f(0, 0, 0);
-			glVertex3f(1, 0, 1);
-			glEnd();
-
-			glBegin(GL_TRIANGLES);
-			glColor3f(1, 0, 0);
 			glVertex3f(1, 0, 1);
 			glVertex3f(0, 4, 0);
-			glVertex3f(4, 0, (1.0)*planes[i].xxx);
+			glColor3f(1, 0, 0);
+			glVertex3f(4, 0, (1.0) * planes[i].wing_h);
 			glEnd();
 
 			glPopMatrix();
@@ -168,7 +153,7 @@ void add_plane(void) {
 			if (random() & 0x1)
 				planes[i].speed *= -1;
 			planes[i].theta = ((float) (random() % 257)) * 0.1111;
-			planes[i].xxx = 0;
+			planes[i].wing_h = 0;
 			tick_per_plane(i);
 			if (!moving)
 				glutPostRedisplay();
@@ -194,12 +179,10 @@ void tick(void) {
 	for (i = 0; i < MAX_PLANES; i++)
 		if (planes[i].speed != 0.0) {
 			tick_per_plane(i);
-			if (planes[i].xxx == 0)
-
-			{
-				planes[i].xxx = 2;
+			if (planes[i].wing_h == 0) {
+				planes[i].wing_h = 2;
 			} else {
-				planes[i].xxx = 0;
+				planes[i].wing_h = 0;
 
 			}
 		}
