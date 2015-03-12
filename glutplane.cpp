@@ -36,24 +36,32 @@ public:
 	GLfloat red, green, blue;
 	float x, y, z, angle;
 	float wing_h;
+	float theta;
 
 	Plane() {
 		/* Color */
 		red = (random() % 100) / 100.0;
 		green = (random() % 100) / 100.0;
 		blue = (random() % 100) / 100.0;
+
+		x = y = z = 0.0;
+		angle = 0;
+
 		speed = ((float) (random() % 20)) * 0.001 + 0.02;
 		if (random() & 0x1)
 			speed *= -1;
 		wing_h = 0;
+		theta = ((float) (random() % 257)) * 0.1111;
 
 	}
 
 	void tick() {
-		z = -9 + 4 * cos(speed);
-		x = 4 * sin(2 * speed);
-		y = sin(speed / 3.4) * 3;
-		angle = ((atan(2.0) + M_PI_2) * sin(speed) - M_PI_2) * 180 / M_PI;
+		float theta_new = theta += speed;
+		z = -9 + 4 * cos(theta_new);
+		x = 4 * sin(2 * theta_new);
+		y = sin(theta_new / 3.4) * 3;
+		angle = ((atan(2.0) + M_PI_2) * sin(theta_new) - M_PI_2)
+				* 180/ M_PI;
 		if (speed < 0.0)
 			angle += 180;
 
@@ -97,8 +105,6 @@ list<Plane*>* all_planes = NULL;
                            glVertex3f */
 
 void draw(void) {
-	int i;
-
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	/* paint black to blue smooth shaded polygon for background */
@@ -129,8 +135,6 @@ void remove_plane(void) {
 }
 
 void tick(void) {
-	int i;
-
 	for (Plane* p : *all_planes) {
 		p->tick();
 	}
@@ -176,13 +180,11 @@ void menu(int item) {
 	case MOTION_ON:
 		moving = GL_TRUE;
 		//glutChangeToMenuEntry(3, "Motion off", MOTION_OFF);
-//		glutIdleFunc(animate);
 		glutTimerFunc(100, animate, 0);
 		break;
 	case MOTION_OFF:
 		moving = GL_FALSE;
 		//glutChangeToMenuEntry(3, "Motion", MOTION_ON);
-		//glutTimerFunc(1000, animate , 0);
 		glutIdleFunc(NULL);
 		break;
 	case QUIT:
@@ -196,7 +198,7 @@ int main(int argc, char *argv[]) {
 	/* use multisampling if available */
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_MULTISAMPLE);
 	glutInitWindowSize(600, 400);
-	glutCreateWindow("glutplane");
+	glutCreateWindow("Planes");
 	glutDisplayFunc(draw);
 	glutKeyboardFunc(keyboard);
 	glutCreateMenu(menu);
@@ -217,6 +219,7 @@ int main(int argc, char *argv[]) {
 	add_plane();
 	add_plane();
 	add_plane();
+//	atexit(free_mem);
 	/* start event processing */
 	glutMainLoop();
 	return 0; /* ANSI C requires main to return int. */
